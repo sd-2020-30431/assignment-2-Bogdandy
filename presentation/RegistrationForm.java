@@ -181,13 +181,6 @@ public class RegistrationForm extends javax.swing.JFrame {
         } catch (IOException ex) {
             Logger.getLogger(RegistrationForm.class.getName()).log(Level.SEVERE, null, ex);
         }
-        /*req = new SignUpRequest(); 
-       UserDataStructure userDataStructure = new UserDataStructure(usernameField.getText(),passwordField.getText(),emailAddressField.getText(),phoneNumberField.getText(), verificatePasswordField.getText());
-        if(req.userRequest(userDataStructure)){
-        JOptionPane.showMessageDialog(null, "Registration Successful!");
-        }else{
-        JOptionPane.showMessageDialog(null, "Registration Failed!", "Warning", JOptionPane.WARNING_MESSAGE);
-        }*/
     }//GEN-LAST:event_signUpButtonActionPerformed
 
     /**

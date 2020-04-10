@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class LogInForm extends javax.swing.JFrame {
+    private static final ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("Config.xml"); 
     private static final String serverIP ="127.0.0.1";
     private static final int serverPort = 9898;
     private final Socket socket;
@@ -16,7 +17,6 @@ public class LogInForm extends javax.swing.JFrame {
     private final PrintWriter out;
     private InputStream inputStream;
     private ObjectInputStream objectInputStream;
-    private static final ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("Config.xml"); 
     
     public LogInForm() throws IOException{
         initComponents();
@@ -147,13 +147,11 @@ public class LogInForm extends javax.swing.JFrame {
         try {
             String command = "LogIn "+ usernameField.getText() +" "+ passwordField.getText();
             out.println(command);
-                System.out.println("Receiving Data");
             userDataStructure = (UserDataStructure)objectInputStream.readObject();
-                System.out.println("Data Received");
             
             if(userDataStructure.getCheck()){
                 GroceryListManagementForm gManagementForm = appContext.getBean("GroceryGUI", GroceryListManagementForm.class);
-                gManagementForm.setup(userDataStructure);
+                gManagementForm.setup(userDataStructure, socket, inputStream, objectInputStream);
                 gManagementForm.setVisible(true);
                 appContext.close();
                 this.dispose();

@@ -2,8 +2,12 @@ package presentation;
 
 import business.*;
 import dataaccess.GroceryItem;
+import java.io.*;
+import java.net.*;
 import java.text.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -12,18 +16,31 @@ public class GroceryListManagementForm extends javax.swing.JFrame {
     private GroceryListWork request;
     private String reportChoice = "Weekly";
     private int groceryListId = 1;
+    private Socket socket;
+    private BufferedReader input;
+    private PrintWriter out;
+    private InputStream inputStream;
+    private ObjectInputStream objectInputStream;
     private Long itemId = 0L;
    
     public GroceryListManagementForm() {
         initComponents();
     }
 
-    public void setup(UserDataStructure userDataStructure){
+    public void setup(UserDataStructure userDataStructure, Socket socket, InputStream inputStream, ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException{
         this.uSD = userDataStructure;
-        userGroceryList.setModel(request.populateRequest(uSD, groceryListId)); 
+        this.socket = socket;
+        this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.out = new PrintWriter(socket.getOutputStream(), true);
+        this.inputStream = inputStream;
+        this.objectInputStream = objectInputStream;
+        String command = "Retrieve " + groceryListId;
+        out.println(command);
+        DefaultTableModel defaultTableModel = (DefaultTableModel)objectInputStream.readObject();
+        userGroceryList.setModel(defaultTableModel); 
     }
     
-    public void setRequest(GroceryListWork request){
+    public void setRequest(GroceryListWork request) {
         this.request = request;
     }
     
@@ -502,12 +519,14 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         try{
-            if(request.requestItemSearch(searchBar.getText(), groceryListId, uSD)){
+            String command = "Search "+ groceryListId + " " + searchBar.getText();
+            out.println(command);
+            if(input.readLine().contains("true")){
                 JOptionPane.showMessageDialog(null, "Item Exists in the Grocey List!");
             }else{
                JOptionPane.showMessageDialog(null, "No Item Found with this Name Exists in the Grocey List!", "Warning", JOptionPane.WARNING_MESSAGE);
             }
-        }catch(NumberFormatException ex){
+        }catch(NumberFormatException | IOException ex){
             JOptionPane.showMessageDialog(null, "No Item Found with this Name Exists in the Grocey List!", "Warning", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_searchButtonActionPerformed
@@ -556,7 +575,15 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
 
     private void groceryListSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_groceryListSelectorActionPerformed
         groceryListId = groceryListSelector.getSelectedIndex() + 1;
-        userGroceryList.setModel(request.populateRequest(uSD, groceryListId));  
+        String command = "Retrieve "+ uSD.getUsername() + " " + uSD.getPassword() + " " + uSD.getIdUser() + " " + groceryListId;
+        out.println(command);
+        DefaultTableModel defaultTableModel;
+        try {
+            defaultTableModel = (DefaultTableModel)objectInputStream.readObject();
+            userGroceryList.setModel(defaultTableModel); 
+        } catch (IOException | ClassNotFoundException ex) {
+            Logger.getLogger(GroceryListManagementForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_groceryListSelectorActionPerformed
 
     private void userGroceryListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_userGroceryListMouseClicked
