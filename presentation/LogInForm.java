@@ -2,14 +2,29 @@ package presentation;
 
 import business.*;
 import javax.swing.JOptionPane;
+import java.net.*;
+import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class LogInForm extends javax.swing.JFrame {
-    private RequestService req = null;
-    private static ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("Config.xml"); 
+    private static final String serverIP ="127.0.0.1";
+    private static final int serverPort = 9898;
+    private final Socket socket;
+    private final BufferedReader input;
+    private final PrintWriter out;
+    private InputStream inputStream;
+    private ObjectInputStream objectInputStream;
+    private static final ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("Config.xml"); 
     
-    public LogInForm() {
+    public LogInForm() throws IOException{
         initComponents();
+        this.socket = new Socket(serverIP, serverPort);
+        this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.out = new PrintWriter(socket.getOutputStream(), true);
+        this.inputStream = socket.getInputStream();
+        this.objectInputStream = new ObjectInputStream(inputStream);
     }
     
     public static ClassPathXmlApplicationContext getContext(){
@@ -127,24 +142,37 @@ public class LogInForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void logInButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logInButtonActionPerformed
-        req = new LogInRequest();
-        UserDataStructure userDataStructure = new UserDataStructure(usernameField.getText(),passwordField.getText());
-       
+        UserDataStructure userDataStructure = null;
         
-        if(req.userRequest(userDataStructure)){
-            GroceryListManagementForm gManagementForm = appContext.getBean("GroceryGUI", GroceryListManagementForm.class);
-            gManagementForm.setup(userDataStructure);
-            gManagementForm.setVisible(true);
-            appContext.close();
-            this.dispose();
-        }else{
-            JOptionPane.showMessageDialog(null, "LogIn Failed!", "Warning", JOptionPane.WARNING_MESSAGE);
+        try {
+            String command = "LogIn "+ usernameField.getText() +" "+ passwordField.getText();
+            out.println(command);
+                System.out.println("Receiving Data");
+            userDataStructure = (UserDataStructure)objectInputStream.readObject();
+                System.out.println("Data Received");
+            
+            if(userDataStructure.getCheck()){
+                GroceryListManagementForm gManagementForm = appContext.getBean("GroceryGUI", GroceryListManagementForm.class);
+                gManagementForm.setup(userDataStructure);
+                gManagementForm.setVisible(true);
+                appContext.close();
+                this.dispose();
+            }else{
+                JOptionPane.showMessageDialog(null, "LogIn Failed!", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (IOException | ClassNotFoundException ex) {
+            Logger.getLogger(LogInForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_logInButtonActionPerformed
 
     private void signUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_signUpButtonActionPerformed
         RegistrationForm regForm = new RegistrationForm();
-        regForm.setVisible(true);
+        try {
+            regForm.serverPass(socket);
+            regForm.setVisible(true);
+        } catch (IOException ex) {
+            Logger.getLogger(LogInForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_signUpButtonActionPerformed
 
     /**
@@ -178,7 +206,11 @@ public class LogInForm extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new LogInForm().setVisible(true);
+                try {
+                    new LogInForm().setVisible(true);
+                } catch (IOException ex) {
+                    Logger.getLogger(LogInForm.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
