@@ -27,6 +27,8 @@ public class LogInQuery {
                     
             u =(User) criteria.uniqueResult();
             data.setIdUser(u.getIdUser());
+            if(u!=null)
+                data.setCheck(true);
             tx.commit();
             return u != null;
         } catch(HibernateException | NullPointerException e) {

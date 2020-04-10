@@ -19,6 +19,8 @@ public class GroceryListManagementForm extends javax.swing.JFrame {
     private Socket socket;
     private BufferedReader input;
     private PrintWriter out;
+    private OutputStream outputStream;
+    private ObjectOutputStream objectOutputStream;
     private InputStream inputStream;
     private ObjectInputStream objectInputStream;
     private Long itemId = 0L;
@@ -27,16 +29,19 @@ public class GroceryListManagementForm extends javax.swing.JFrame {
         initComponents();
     }
 
-    public void setup(UserDataStructure userDataStructure, Socket socket, InputStream inputStream, ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException{
+    public void setup(UserDataStructure userDataStructure, Socket socket, InputStream inputStream, ObjectInputStream objectInputStream, OutputStream outputStream, ObjectOutputStream objectOutputStream) throws IOException, ClassNotFoundException{
         this.uSD = userDataStructure;
         this.socket = socket;
-        this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.out = new PrintWriter(socket.getOutputStream(), true);
+        this.outputStream = outputStream;
+        this.objectOutputStream = objectOutputStream;
         this.inputStream = inputStream;
         this.objectInputStream = objectInputStream;
+        this.input = new BufferedReader(new InputStreamReader(inputStream));
+        this.out = new PrintWriter(outputStream, true);
         String command = "Retrieve " + groceryListId;
         out.println(command);
         DefaultTableModel defaultTableModel = (DefaultTableModel)objectInputStream.readObject();
+        objectOutputStream.flush();
         userGroceryList.setModel(defaultTableModel); 
     }
     
@@ -543,14 +548,25 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
                     purchaseDateChooser.getSelectedDate().getTime(), expirationDateChooser.getSelectedDate().getTime(), 
                     consumptionChooserCombo.getSelectedDate().getTime(), groceryListId);
             
-                if(request.requestItemInsertion(itemInformation, uSD)){
-                    userGroceryList.setModel(request.populateRequest(uSD, groceryListId)); 
-                    JOptionPane.showMessageDialog(null, "Item Added Successfully!");
-                }else{
-                    JOptionPane.showMessageDialog(null, "Item couldn't be added!\nCheck item fields!", "Warning", JOptionPane.WARNING_MESSAGE);
-                }
-        }catch(NumberFormatException ex){
+            out.println("AddItem ");
+            objectOutputStream.writeObject(itemInformation);
+            objectOutputStream.flush();
+            
+            if(input.readLine().contains("true")){
+                String command = "Retrieve " + groceryListId;
+                out.println(command);
+                DefaultTableModel defaultTableModel;
+
+                defaultTableModel = (DefaultTableModel)objectInputStream.readObject();
+                userGroceryList.setModel(defaultTableModel);    
+                JOptionPane.showMessageDialog(null, "Item Added Successfully!");
+            }else{
+                JOptionPane.showMessageDialog(null, "Item couldn't be added!\nCheck item fields!", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
+        }catch(NumberFormatException | IOException ex){
             JOptionPane.showMessageDialog(null, "Item couldn't be added!\nCheck item fields!", "Warning", JOptionPane.WARNING_MESSAGE);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(GroceryListManagementForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_addItemsToGroceryListActionPerformed
 
@@ -561,23 +577,36 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Integer.parseInt(quantityField.getText()),  Integer.parseInt(calorieValueField.getText()), 
                 purchaseDateChooser.getSelectedDate().getTime(), expirationDateChooser.getSelectedDate().getTime(), 
                 consumptionChooserCombo.getSelectedDate().getTime(), groceryListId);
-        
-            if(request.requestItemModification(itemInformation, uSD)){
-                userGroceryList.setModel(request.populateRequest(uSD, groceryListId));  
+            
+            out.println("Modify ");
+            objectOutputStream.writeObject(itemInformation);
+            objectOutputStream.flush();
+            
+            if(input.readLine().contains("true")){
+                String command = "Retrieve " + groceryListId;
+                out.println(command);
+                DefaultTableModel defaultTableModel;
+
+                defaultTableModel = (DefaultTableModel)objectInputStream.readObject();
+                userGroceryList.setModel(defaultTableModel);    
                 JOptionPane.showMessageDialog(null, "Item modified successfully!");
             }else{
                 JOptionPane.showMessageDialog(null, "Item couldn't be modified!\nCheck item fields!", "Warning", JOptionPane.WARNING_MESSAGE);
             }
-        }catch(NumberFormatException ex){
+        }catch(NumberFormatException| IOException ex){
             JOptionPane.showMessageDialog(null, "Item couldn't be modified!\nCheck item fields!", "Warning", JOptionPane.WARNING_MESSAGE);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(GroceryListManagementForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_modifyItemButtonActionPerformed
 
     private void groceryListSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_groceryListSelectorActionPerformed
         groceryListId = groceryListSelector.getSelectedIndex() + 1;
-        String command = "Retrieve "+ uSD.getUsername() + " " + uSD.getPassword() + " " + uSD.getIdUser() + " " + groceryListId;
+        
+        String command = "Retrieve " + groceryListId;
         out.println(command);
         DefaultTableModel defaultTableModel;
+        
         try {
             defaultTableModel = (DefaultTableModel)objectInputStream.readObject();
             userGroceryList.setModel(defaultTableModel); 
@@ -605,7 +634,6 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
             consumptionChooserCombo.setSelectedDate(cal);
         
         } catch (ParseException ex) {
-            //Logger.getLogger(GroceryListManagementForm.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(null, "Item couldn't be set!", "Warning", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_userGroceryListMouseClicked
@@ -613,13 +641,22 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
     private void ClearListButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ClearListButtonActionPerformed
         int input = JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the list?");
         if(input == 0){
-            request = new GroceryListWork();
+            String command = "ClearList " + groceryListId;
+            out.println(command);
             
-            if(request.requestListClear(groceryListId, uSD)){
-                userGroceryList.setModel(request.populateRequest(uSD, groceryListId));  
-                JOptionPane.showMessageDialog(null, "Grocery list cleared!");
-            }else{
-                JOptionPane.showMessageDialog(null, "List couldn't be cleared!", "Warning", JOptionPane.WARNING_MESSAGE);
+            try {
+                if(this.input.readLine().contains("true")){
+                    command = "Retrieve " + groceryListId;
+                    out.println(command);
+                    DefaultTableModel defaultTableModel;
+                    defaultTableModel = (DefaultTableModel)objectInputStream.readObject();
+                    userGroceryList.setModel(defaultTableModel);
+                    JOptionPane.showMessageDialog(null, "Grocery list cleared!");
+                }else{
+                    JOptionPane.showMessageDialog(null, "List couldn't be cleared!", "Warning", JOptionPane.WARNING_MESSAGE);
+                }
+            } catch (IOException | ClassNotFoundException ex) {
+                Logger.getLogger(GroceryListManagementForm.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }//GEN-LAST:event_ClearListButtonActionPerformed
@@ -645,7 +682,6 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
 
     private void reportsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reportsButtonActionPerformed
         List<GroceryItem> groceryList = request.requestGroceryListData(uSD);
-        //groceryList = new RetrieveGroceryList(uSD, groceryListId).getList();
         AbstractFactory abstractFactory;
         abstractFactory = ReportProvider.getFactory(reportChoice);
         abstractFactory.create(reportChoice, groceryList);
@@ -656,7 +692,15 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
     }//GEN-LAST:event_reportTypeComboBoxActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        userGroceryList.setModel(request.populateRequest(uSD, groceryListId));  
+        String command = "Retrieve " + groceryListId;
+        out.println(command);
+        DefaultTableModel defaultTableModel;
+        try {
+            defaultTableModel = (DefaultTableModel)objectInputStream.readObject();
+            userGroceryList.setModel(defaultTableModel);  
+        } catch (IOException | ClassNotFoundException ex) {
+            Logger.getLogger(GroceryListManagementForm.class.getName()).log(Level.SEVERE, null, ex);
+        } 
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     /**

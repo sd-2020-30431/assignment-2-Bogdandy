@@ -15,16 +15,20 @@ public class LogInForm extends javax.swing.JFrame {
     private final Socket socket;
     private final BufferedReader input;
     private final PrintWriter out;
+    private OutputStream outputStream;
+    private ObjectOutputStream objectOutputStream;
     private InputStream inputStream;
     private ObjectInputStream objectInputStream;
     
     public LogInForm() throws IOException{
         initComponents();
         this.socket = new Socket(serverIP, serverPort);
-        this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.out = new PrintWriter(socket.getOutputStream(), true);
+        this.outputStream = socket.getOutputStream();
+        this.objectOutputStream = new ObjectOutputStream(outputStream);
         this.inputStream = socket.getInputStream();
         this.objectInputStream = new ObjectInputStream(inputStream);
+        this.input = new BufferedReader(new InputStreamReader(inputStream));
+        this.out = new PrintWriter(socket.getOutputStream(), true);
     }
     
     public static ClassPathXmlApplicationContext getContext(){
@@ -151,7 +155,7 @@ public class LogInForm extends javax.swing.JFrame {
             
             if(userDataStructure.getCheck()){
                 GroceryListManagementForm gManagementForm = appContext.getBean("GroceryGUI", GroceryListManagementForm.class);
-                gManagementForm.setup(userDataStructure, socket, inputStream, objectInputStream);
+                gManagementForm.setup(userDataStructure, socket, inputStream, objectInputStream, outputStream, objectOutputStream);
                 gManagementForm.setVisible(true);
                 appContext.close();
                 this.dispose();

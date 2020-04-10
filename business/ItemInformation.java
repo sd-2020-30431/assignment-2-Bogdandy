@@ -1,8 +1,9 @@
 package business;
 
 import java.util.Date;
+import java.io.Serializable;
 
-public class ItemInformation{
+public class ItemInformation implements Serializable{
     private Long itemId;
     private String itemName;
     private Integer quantity;
