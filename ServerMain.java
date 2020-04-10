@@ -25,11 +25,6 @@ public class ServerMain {
             pool.execute(userThread);
         }
     }
-
-    public static String getDate(){
-        String date = (new Date()).toString();
-        return date;
-    }
     
     public static void disconnectUser(UserHandler user){
         users.remove(user);
