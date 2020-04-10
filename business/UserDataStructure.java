@@ -1,12 +1,15 @@
 package business;
 
-public class UserDataStructure {
+import java.io.Serializable;
+
+public class UserDataStructure implements Serializable{
     private Long idUser;
     private String username;
     private String password;
     private String phoneNumber;
     private String emailAddress;
     private String passCheck;
+    private boolean check;
     
     public UserDataStructure(String username, String password){
         this.username = username;
@@ -48,5 +51,13 @@ public class UserDataStructure {
     
     public String getEmailAddress(){
         return emailAddress;
+    }
+    
+    public boolean getCheck(){
+        return check;
+    }
+    
+    public void setCheck(boolean check){
+        this.check = check;
     }
 }
