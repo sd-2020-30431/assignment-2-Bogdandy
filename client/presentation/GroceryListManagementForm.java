@@ -1,6 +1,5 @@
 package client.presentation;
 
-import server.business.*;
 import java.io.*;
 import java.text.*;
 import java.util.*;
@@ -10,7 +9,6 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 public class GroceryListManagementForm extends javax.swing.JFrame {
-    private GroceryListWork request;
     private String reportChoice = "Weekly";
     private int groceryListId = 1;
     private ObjectOutputStream objectOutputStream;
@@ -31,10 +29,6 @@ public class GroceryListManagementForm extends javax.swing.JFrame {
         
         DefaultTableModel defaultTableModel = (DefaultTableModel)objectInputStream.readObject();
         userGroceryList.setModel(defaultTableModel); 
-    }
-    
-    public void setRequest(GroceryListWork request) {
-        this.request = request;
     }
     
     @SuppressWarnings("unchecked")
@@ -535,19 +529,20 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
     private void addItemsToGroceryListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addItemsToGroceryListActionPerformed
         
         try{
-            ItemInformation itemInformation = new ItemInformation(0L, itemNameField.getText(), 
-                    Integer.parseInt(quantityField.getText()),  Integer.parseInt(calorieValueField.getText()), 
-                    purchaseDateChooser.getSelectedDate().getTime(), expirationDateChooser.getSelectedDate().getTime(), 
-                    consumptionChooserCombo.getSelectedDate().getTime(), groceryListId);
+            String command ="AddItem "+ 0L +" "+ itemNameField.getText() +" "+ 
+                    quantityField.getText() +" "+ calorieValueField.getText() +" "+ groceryListId;
             
-            
-            objectOutputStream.writeObject("AddItem ");
+            objectOutputStream.writeObject(command);
             objectOutputStream.flush();
-            objectOutputStream.writeObject(itemInformation);
+            objectOutputStream.writeObject(purchaseDateChooser.getSelectedDate().getTime());
+            objectOutputStream.flush();
+            objectOutputStream.writeObject(expirationDateChooser.getSelectedDate().getTime());
+            objectOutputStream.flush();
+            objectOutputStream.writeObject(consumptionChooserCombo.getSelectedDate().getTime());
             objectOutputStream.flush();
             
             if(objectInputStream.readObject().toString().contains("true")){
-                String command = "Retrieve " + groceryListId;
+                command = "Retrieve " + groceryListId;
                 objectOutputStream.writeObject(command);
                 objectOutputStream.flush();
                 DefaultTableModel defaultTableModel;
@@ -568,18 +563,20 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
     private void modifyItemButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modifyItemButtonActionPerformed
        
         try{
-            ItemInformation itemInformation = new ItemInformation(itemId, itemNameField.getText(), 
-                Integer.parseInt(quantityField.getText()),  Integer.parseInt(calorieValueField.getText()), 
-                purchaseDateChooser.getSelectedDate().getTime(), expirationDateChooser.getSelectedDate().getTime(), 
-                consumptionChooserCombo.getSelectedDate().getTime(), groceryListId);
+            String command ="Modify "+ itemId +" "+ itemNameField.getText() +" "+ 
+                    quantityField.getText() +" "+ calorieValueField.getText() +" "+ groceryListId;
             
-            objectOutputStream.writeObject("Modify ");
+            objectOutputStream.writeObject(command);
             objectOutputStream.flush();
-            objectOutputStream.writeObject(itemInformation);
+            objectOutputStream.writeObject(purchaseDateChooser.getSelectedDate().getTime());
+            objectOutputStream.flush();
+            objectOutputStream.writeObject(expirationDateChooser.getSelectedDate().getTime());
+            objectOutputStream.flush();
+            objectOutputStream.writeObject(consumptionChooserCombo.getSelectedDate().getTime());
             objectOutputStream.flush();
             
             if(objectInputStream.readObject().toString().contains("true")){
-                String command = "Retrieve " + groceryListId;
+                command = "Retrieve " + groceryListId;
                 objectOutputStream.writeObject(command);
                 objectOutputStream.flush();
                 DefaultTableModel defaultTableModel;
@@ -666,28 +663,30 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
     private void removeItemButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeItemButtonActionPerformed
         
         try{
-            ItemInformation itemInformation = new ItemInformation(itemId, itemNameField.getText(), 
-                Integer.parseInt(quantityField.getText()),  Integer.parseInt(calorieValueField.getText()), 
-                purchaseDateChooser.getSelectedDate().getTime(), expirationDateChooser.getSelectedDate().getTime(), 
-                consumptionChooserCombo.getSelectedDate().getTime(), groceryListId);
-            
-                objectOutputStream.writeObject("RemoveItem ");
+            String command ="RemoveItem "+ itemId +" "+ itemNameField.getText() +" "+ 
+                quantityField.getText() +" "+ calorieValueField.getText() +" "+ groceryListId;
+
+            objectOutputStream.writeObject(command);
+            objectOutputStream.flush();
+            objectOutputStream.writeObject(purchaseDateChooser.getSelectedDate().getTime());
+            objectOutputStream.flush();
+            objectOutputStream.writeObject(expirationDateChooser.getSelectedDate().getTime());
+            objectOutputStream.flush();
+            objectOutputStream.writeObject(consumptionChooserCombo.getSelectedDate().getTime());
+            objectOutputStream.flush();
+
+            if(objectInputStream.readObject().toString().contains("true")){
+                command = "Retrieve " + groceryListId;
+                objectOutputStream.writeObject(command);
                 objectOutputStream.flush();
-                objectOutputStream.writeObject(itemInformation);
-                objectOutputStream.flush();
-                
-                if(objectInputStream.readObject().toString().contains("true")){
-                    String command = "Retrieve " + groceryListId;
-                    objectOutputStream.writeObject(command);
-                    objectOutputStream.flush();
-                    
-                    DefaultTableModel defaultTableModel;
-                    defaultTableModel = (DefaultTableModel)objectInputStream.readObject();
-                    userGroceryList.setModel(defaultTableModel);
-                    JOptionPane.showMessageDialog(null, "Item removed");
-                }else{
-                    JOptionPane.showMessageDialog(null, "Item couldn't be removed!\nCheck if it exists or if your connection is stable!", "Warning", JOptionPane.WARNING_MESSAGE);
-                }
+
+                DefaultTableModel defaultTableModel;
+                defaultTableModel = (DefaultTableModel)objectInputStream.readObject();
+                userGroceryList.setModel(defaultTableModel);
+                JOptionPane.showMessageDialog(null, "Item removed");
+            }else{
+                JOptionPane.showMessageDialog(null, "Item couldn't be removed!\nCheck if it exists or if your connection is stable!", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
         }catch(IOException | NumberFormatException ex){
             JOptionPane.showMessageDialog(null, "Item couldn't be removed!\nCheck if it exists or if your connection is stable!", "Warning", JOptionPane.WARNING_MESSAGE);
         } catch (ClassNotFoundException ex) {
@@ -696,10 +695,13 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
     }//GEN-LAST:event_removeItemButtonActionPerformed
 
     private void reportsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reportsButtonActionPerformed
-        //List<ItemInformation> groceryList = request.requestGroceryListData(uSD);
-        //AbstractFactory abstractFactory;
-        // abstractFactory = ReportProvider.getFactory(reportChoice);
-        //abstractFactory.create(reportChoice, groceryList);
+        String command ="Report " + reportChoice;
+        try {
+            objectOutputStream.writeObject(command);
+            objectOutputStream.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(GroceryListManagementForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_reportsButtonActionPerformed
 
     private void reportTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reportTypeComboBoxActionPerformed

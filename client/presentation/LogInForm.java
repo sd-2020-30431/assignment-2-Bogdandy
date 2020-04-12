@@ -5,10 +5,8 @@ import java.net.*;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class LogInForm extends javax.swing.JFrame {
-    private static final ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("Config.xml"); 
     private static final String serverIP = "127.0.0.1";
     private static final int serverPort = 9898;
     private final Socket socket;
@@ -24,10 +22,6 @@ public class LogInForm extends javax.swing.JFrame {
         this.objectOutputStream = new ObjectOutputStream(outputStream);
         this.inputStream = socket.getInputStream();
         this.objectInputStream = new ObjectInputStream(inputStream);
-    }
-    
-    public static ClassPathXmlApplicationContext getContext(){
-        return appContext;
     }
     
     @SuppressWarnings("unchecked")
@@ -148,10 +142,9 @@ public class LogInForm extends javax.swing.JFrame {
             
             
             if(objectInputStream.readObject().toString().contains("true")){
-                GroceryListManagementForm gManagementForm = appContext.getBean("GroceryGUI", GroceryListManagementForm.class);
+                GroceryListManagementForm gManagementForm = new GroceryListManagementForm();
                 gManagementForm.setup(objectInputStream, objectOutputStream);
                 gManagementForm.setVisible(true);
-                appContext.close();
                 this.dispose();
             }else{
                 JOptionPane.showMessageDialog(null, "LogIn Failed!", "Warning", JOptionPane.WARNING_MESSAGE);
