@@ -1,7 +1,6 @@
 package server.business;
 
 import java.io.*;
-import static java.lang.System.out;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -15,6 +14,8 @@ public class UserHandler implements Runnable{
     private InputStream inputStream;
     private ObjectInputStream objectInputStream;
     private UserDataStructure userDataStructure;
+    private GroceryListWork groceryListWork;
+    private Timer t1;
     
     public UserHandler(Socket clientSocket) throws IOException{
         this.user = clientSocket;
@@ -22,9 +23,10 @@ public class UserHandler implements Runnable{
         this.objectOutputStream = new ObjectOutputStream(outputStream);
         this.inputStream = user.getInputStream();
         this.objectInputStream = new ObjectInputStream(inputStream);
+        groceryListWork = new GroceryListWork();
+        t1 = new Timer();
     }
     
-    @Override
     public void run() {
         try{
             while(true){
@@ -36,18 +38,19 @@ public class UserHandler implements Runnable{
                     
                     objectOutputStream.writeObject(new LogInRequest().userRequest(userDataStructure));
                     objectOutputStream.flush();
+                    t1.schedule(new CheckList(userDataStructure, groceryListWork), 2000, 60000);
                 }else if(segments[0].equals("SignUp")){
                     UserDataStructure uSD = new UserDataStructure(segments[1], segments[2], segments[3], segments[4], segments[5]);
                     
                     objectOutputStream.writeObject(new SignUpRequest().userRequest(uSD));
                     objectOutputStream.flush();
                 }else if(segments[0].equals("Retrieve")){
-                    DefaultTableModel defaultTableModel = (DefaultTableModel) new GroceryListWork().populateRequest(userDataStructure, Integer.parseInt(segments[1]));
+                    DefaultTableModel defaultTableModel = (DefaultTableModel) groceryListWork.populateRequest(userDataStructure, Integer.parseInt(segments[1]));
                     
                     objectOutputStream.writeObject(defaultTableModel);
                     objectOutputStream.flush();
                 }else if(segments[0].equals("Search")){
-                    objectOutputStream.writeObject(new GroceryListWork().requestItemSearch(segments[2], Integer.parseInt(segments[1]), userDataStructure));
+                    objectOutputStream.writeObject(groceryListWork.requestItemSearch(segments[2], Integer.parseInt(segments[1]), userDataStructure));
                     objectOutputStream.flush();
                 }else if(segments[0].equals("Modify")){
                     ItemInformation itemInformation = new ItemInformation(Long.parseLong(segments[1]), 
@@ -55,7 +58,7 @@ public class UserHandler implements Runnable{
                             (Date)objectInputStream.readObject(), (Date)objectInputStream.readObject(), 
                             (Date)objectInputStream.readObject(), Integer.parseInt(segments[5]));
                     
-                    objectOutputStream.writeObject(new GroceryListWork().requestItemModification(itemInformation, userDataStructure));
+                    objectOutputStream.writeObject(groceryListWork.requestItemModification(itemInformation, userDataStructure));
                     objectOutputStream.flush();
                 }else if(segments[0].equals("AddItem")){
                     ItemInformation itemInformation = new ItemInformation(Long.parseLong(segments[1]), 
@@ -63,7 +66,7 @@ public class UserHandler implements Runnable{
                             (Date)objectInputStream.readObject(), (Date)objectInputStream.readObject(), 
                             (Date)objectInputStream.readObject(), Integer.parseInt(segments[5]));
                     
-                    objectOutputStream.writeObject(new GroceryListWork().requestItemInsertion(itemInformation, userDataStructure));
+                    objectOutputStream.writeObject(groceryListWork.requestItemInsertion(itemInformation, userDataStructure));
                     objectOutputStream.flush();
                 }else if(segments[0].equals("RemoveItem")){
                     ItemInformation itemInformation = new ItemInformation(Long.parseLong(segments[1]), 
@@ -71,13 +74,13 @@ public class UserHandler implements Runnable{
                             (Date)objectInputStream.readObject(), (Date)objectInputStream.readObject(), 
                             (Date)objectInputStream.readObject(), Integer.parseInt(segments[5]));
                     
-                    objectOutputStream.writeObject(new GroceryListWork().requestItemRemoval(itemInformation, userDataStructure));
+                    objectOutputStream.writeObject(groceryListWork.requestItemRemoval(itemInformation, userDataStructure));
                     objectOutputStream.flush();
                 }else if(segments[0].equals("ClearList")){
-                    objectOutputStream.writeObject(new GroceryListWork().requestListClear(Integer.parseInt(segments[1]), userDataStructure));
+                    objectOutputStream.writeObject(groceryListWork.requestListClear(Integer.parseInt(segments[1]), userDataStructure));
                     objectOutputStream.flush();
                 }else if(segments[0].equals("Report")){
-                    List<ItemInformation> groceryList = new GroceryListWork().requestGroceryListData(userDataStructure);
+                    List<ItemInformation> groceryList = groceryListWork.requestGroceryListData(userDataStructure);
                     AbstractFactory abstractFactory;
                     abstractFactory = ReportProvider.getFactory(segments[1]);
                     abstractFactory.create(segments[1], groceryList);
@@ -91,6 +94,7 @@ public class UserHandler implements Runnable{
             }
         }catch(IOException ex){
             System.err.println("[Server] A user has disconnected from the server");
+            t1.cancel();
             ServerMain.disconnectUser(this);
             Thread.currentThread().interrupt();
         } catch (ClassNotFoundException ex) {

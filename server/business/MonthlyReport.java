@@ -5,7 +5,6 @@ import java.io.*;
 import java.text.*;
 import java.time.*;
 import java.util.*;
-import javax.swing.JOptionPane;
 
 public class MonthlyReport {
     private List<GroceryItem> groceryList;
@@ -135,7 +134,7 @@ public class MonthlyReport {
                                     myWriter.write("\nTotal Calories: " + calories + "\n");
                                     YearMonth yearMonthObject = YearMonth.of(yearDate, monthDate);
                                     int daysInMonth = yearMonthObject.lengthOfMonth();
-                                    if(1000*daysInMonth> calories){
+                                    if(1000 * daysInMonth> calories){
                                         myWriter.write("Calorie Intake too low! Please try to revise your diet.\n");
                                         notification = true;
                                     }else if(calories > 2800* daysInMonth){
@@ -146,10 +145,6 @@ public class MonthlyReport {
                         }
                     } 
                 }
-                if(notification){
-                    JOptionPane.showMessageDialog(null, "Daily Calorie Intake is not proper!\nPlease try to revise your diet.", "Warning", JOptionPane.WARNING_MESSAGE);
-                }
-                
                 myWriter.close();
             }
         }catch(IOException e){

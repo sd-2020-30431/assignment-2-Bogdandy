@@ -3,9 +3,7 @@ package server.business;
 import server.dataaccess.GroceryItem;
 import java.io.*;
 import java.text.*;
-import java.time.YearMonth;
 import java.util.*;
-import javax.swing.JOptionPane;
 
 public class WeeklyReport {
     private List<GroceryItem> groceryList;
@@ -143,11 +141,6 @@ public class WeeklyReport {
                         }
                     } 
                 }
-                if(notification){
-                    JOptionPane.showMessageDialog(null, "Daily Calorie Intake is not proper!\nPlease try to revise your diet.", "Warning", JOptionPane.WARNING_MESSAGE);
-                }
-                
-                
                 myWriter.close();
             }
         }catch(IOException e){
