@@ -1,5 +1,7 @@
 package com.boot.resolvers;
 
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 import com.boot.entities.*;
@@ -12,10 +14,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserMutations implements GraphQLMutationResolver {
     private final UserRepository userRepository;
-    private final GroceryItemRepository groceryItemRepository;
     
     public User newUser(String username, String password, String email, String phoneNumber) {
-    	User user = new User();
+    	final User user = new User();
+    	
     	user.setUsername(username);
     	user.setPassword(password);
     	user.setEmail(email);
@@ -24,23 +26,17 @@ public class UserMutations implements GraphQLMutationResolver {
 
         return user;
     }
-
-    public GroceryItem newGroceryItem(int listNo, Long idUserList, String itemName, int quantity, int caloricValue, String purchaseDate, String consumptionDate, String expirationDate) {
-    	GroceryItem groceryItem = new GroceryItem();
-    	groceryItem.setIdUserList(idUserList);
-    	groceryItem.setListNo(listNo);
-    	groceryItem.setItemName(itemName);
-    	groceryItem.setQuantity(quantity);
-    	groceryItem.setCaloricValue(caloricValue);
-    	groceryItem.setPurchaseDate(purchaseDate);
-    	groceryItem.setConsumptionDate(consumptionDate);
-    	groceryItem.setExpirationDate(expirationDate);
-    	groceryItemRepository.save(groceryItem);
-
-        return groceryItem;
-    }
     
-    public boolean deleteGroceryItem(int listNo, Long idUserL, String itemName) {
-    	return false;
+    public Long deleteUser(String username) {
+    	final List<User> users= (List<User>) userRepository.findAll();
+    	
+    	for (User user : users) {
+            if (user.getUsername().equals(username)) {
+            	userRepository.delete(user);
+            	return user.getId();
+            }
+        }
+    	
+    	return null;
     }
 }

@@ -1,15 +1,17 @@
 type Query{
     users: [User]
+    findUser(Username: String!, Password: String!): Boolean!
 }
 
 type User{
     id: Long
-    Username: String
-    Password: String
-    Email: String
-    Phone: String
+    Username: String!
+    Password: String!
+    Email: String!
+    Phone: String!
 }
 
 type Mutation{
-	newUser(Username: String!, Password: String!, Email: String, Phone: String): User
+	newUser(Username: String!, Password: String!, Email: String, Phone: String): User!
+	deleteUser(username: String!) : Long!
 }
