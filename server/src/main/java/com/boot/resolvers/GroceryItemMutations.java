@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 public class GroceryItemMutations implements GraphQLMutationResolver {
     private final GroceryItemRepository groceryItemRepository;
 
-    public GroceryItem newGroceryItem(int listNo, Long idUserList, String itemName, int quantity, int caloricValue, String purchaseDate, String consumptionDate, String expirationDate) {
+    public GroceryItem newGroceryItem(int listNo, Long idUserList, String itemName, int quantity, int caloricValue, String purchaseDate, String expirationDate, String consumptionDate) {
     	final GroceryItem groceryItem = new GroceryItem();
     	
     	groceryItem.setIdUserList(idUserList);
@@ -40,7 +40,7 @@ public class GroceryItemMutations implements GraphQLMutationResolver {
     	return false;
     }
     
-    public GroceryItem modifyGroceryItem(Long id, String itemName, int quantity, int caloricValue, String purchaseDate, String consumptionDate, String expirationDate) throws IOException {
+    public GroceryItem modifyGroceryItem(Long id, String itemName, int quantity, int caloricValue, String purchaseDate, String expirationDate, String consumptionDate) throws IOException {
     	GroceryItem groceryItem = groceryItemRepository.findById(id).orElse(null);
     	
     	if(groceryItem!=null) {
