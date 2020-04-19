@@ -1,9 +1,10 @@
 package client.presentation;
 
-import client.serveracess.RequestLogInQuery;
+import client.business.AccountChecker;
+import client.business.*;
+
 import java.io.*;
 import javax.swing.JOptionPane;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 
 public class LogInForm extends javax.swing.JFrame {
@@ -123,16 +124,21 @@ public class LogInForm extends javax.swing.JFrame {
     
     
     private void logInButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logInButtonActionPerformed
-        RequestLogInQuery logInQuery = new RequestLogInQuery();
+        UserRequests userRequest = new UserRequests();
+        AccountChecker accountChecker = new AccountChecker(new UserDataStructure(usernameField.getText(),passwordField.getText()));
+        
         try {
-            String result = logInQuery.URLConnectionRequestLogIn(usernameField.getText(), passwordField.getText());
-            String id = StringUtils.substringBetween(result, "\"id\":", "}");
-            
-            if(!result.contains("null")){
-                GroceryListManagementForm gManagementForm = new GroceryListManagementForm();
-                gManagementForm.setUserID(Long.parseLong(id));
-                gManagementForm.setVisible(true);
-                this.dispose();
+            if(accountChecker.checkAllFields()){
+                Long id = userRequest.LogInRequest(usernameField.getText(),passwordField.getText());
+                        
+                if(id != null){
+                    GroceryListManagementForm gManagementForm = new GroceryListManagementForm();
+                    gManagementForm.setUserID(id);
+                    gManagementForm.setVisible(true);
+                    this.dispose();
+                }else{
+                    JOptionPane.showMessageDialog(null, "LogIn Failed!\nPlease check credentials!", "Warning", JOptionPane.WARNING_MESSAGE);
+                }
             }else{
                 JOptionPane.showMessageDialog(null, "LogIn Failed!\nPlease check credentials!", "Warning", JOptionPane.WARNING_MESSAGE);
             }

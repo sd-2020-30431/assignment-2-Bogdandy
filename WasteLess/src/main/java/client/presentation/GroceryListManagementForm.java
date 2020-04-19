@@ -1,5 +1,6 @@
 package client.presentation;
 
+import client.business.CheckList;
 import client.business.GroceryItemRequests;
 import client.business.ItemInformation;
 import java.io.*;
@@ -7,8 +8,6 @@ import java.text.*;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.json.JSONException;
@@ -16,10 +15,11 @@ import org.json.JSONException;
 public class GroceryListManagementForm extends javax.swing.JFrame {
     private String reportChoice = "Weekly";
     private int groceryListId = 1;
-    private Long id = 1L;
+    private Long id;
     private Integer selectedRowIndex = null;
     private final GroceryItemRequests groceryItemRequests;
-   
+    private Timer observerTimer;
+    
     public GroceryListManagementForm() {
         initComponents();
         groceryItemRequests = new GroceryItemRequests();
@@ -37,6 +37,8 @@ public class GroceryListManagementForm extends javax.swing.JFrame {
     public void setUserID(Long id){
         this.id = id;
         setTableList();
+        observerTimer = new Timer();
+        observerTimer.schedule(new CheckList(id, groceryItemRequests), 2000, 10000);
     }
     
     @SuppressWarnings("unchecked")
@@ -657,6 +659,7 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
         setTableList();
+        selectedRowIndex = null;
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     /**

@@ -1,6 +1,6 @@
 package client.presentation;
 
-import client.serveracess.RequestSignUpQuery;
+import client.business.*;
 import java.io.*;
 import javax.swing.JOptionPane;
 import org.json.JSONException;
@@ -152,16 +152,20 @@ public class RegistrationForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void signUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_signUpButtonActionPerformed
-        RequestSignUpQuery signUpQuery = new RequestSignUpQuery();
+        UserRequests userRequest = new UserRequests();
+        UserDataStructure userDataStructure = new UserDataStructure(usernameField.getText(), passwordField.getText(), emailAddressField.getText(), phoneNumberField.getText(), verificatePasswordField.getText());
+        AccountChecker accountChecker = new AccountChecker(userDataStructure);
         
         try {
-            String result = signUpQuery.URLConnectionRequestSignUp(usernameField.getText(), passwordField.getText(), emailAddressField.getText(), phoneNumberField.getText());
-            System.out.println(result);
-            if(result.contains(usernameField.getText())){
-                JOptionPane.showMessageDialog(null, "Sign Up Successful with username: "+usernameField.getText()+"!");
-           }else{
-                JOptionPane.showMessageDialog(null, "SignUp Failed!", "Warning", JOptionPane.WARNING_MESSAGE);
-           }
+            if(accountChecker.checkAllFields()){
+                if(userRequest.SignUpRequest(userDataStructure)){
+                    JOptionPane.showMessageDialog(null, "Sign Up successful with username:\n"+usernameField.getText()+"!");
+                }else{
+                    JOptionPane.showMessageDialog(null, "Sign Up Failed!\n Username already taken!", "Warning", JOptionPane.WARNING_MESSAGE);
+                }
+            }else{
+                JOptionPane.showMessageDialog(null, "Sign Up Failed!\n Please check the fields!", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
         } catch (IOException | JSONException ex) {
             System.out.println("exception TRIGGERED");
             System.out.println(ex.getLocalizedMessage());

@@ -19,8 +19,8 @@ import org.json.JSONException;
 public class RequestAllUserItems {
     private final List<ItemInformation> groceryItems = new ArrayList<>();
     
-    public List<ItemInformation> URLConnectionRequestGroceryList(Long id, Integer listNo) throws IOException, JSONException, ParseException {
-        String json = "{\"query\": \"query { userAllItems( idUserList: "+id+"){id, idUserList, ItemName, Quantity, CaloricValue, PurchaseDate, ExpirationDate, ConsumptionDate}}\"}";
+    public List<ItemInformation> URLConnectionRequestGroceryList(Long id) throws IOException, JSONException, ParseException {
+        String json = "{\"query\": \"query { userAllItems( idUserList: "+id+"){id, idUserList, ListNo, ItemName, Quantity, CaloricValue, PurchaseDate, ExpirationDate, ConsumptionDate}}\"}";
 
         URL url = new URL("http://localhost:8080/graphql");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -42,6 +42,7 @@ public class RequestAllUserItems {
         try{
             String[] ids = StringUtils.substringsBetween(result, "{\"id\":", ",");
             String[] idUserLists = StringUtils.substringsBetween(result, "\"idUserList\":", ",");
+            String[] listNos = StringUtils.substringsBetween(result, "\"ListNo\":", ",");
             String[] itemNames = StringUtils.substringsBetween(result, "\"ItemName\":\"", "\",");
             String[] quantities = StringUtils.substringsBetween(result, "\"Quantity\":", ",");
             String[] caloricValues = StringUtils.substringsBetween(result, "\"CaloricValue\":", ",");
@@ -54,7 +55,7 @@ public class RequestAllUserItems {
                 LocalDate purchaseDate = LocalDate.parse(purchaseDates[i]);
                 LocalDate expirationDate = LocalDate.parse(expirationDates[i]);
                 LocalDate consumptionDate = LocalDate.parse(consumptionDates[i]);
-                ItemInformation itemInformation = new ItemInformation(Long.parseLong(ids[i]), Long.parseLong(idUserLists[i]), itemNames[i], Integer.parseInt(quantities[i]),Integer.parseInt(caloricValues[i]), purchaseDate, expirationDate, consumptionDate, listNo);
+                ItemInformation itemInformation = new ItemInformation(Long.parseLong(ids[i]), Long.parseLong(idUserLists[i]), itemNames[i], Integer.parseInt(quantities[i]),Integer.parseInt(caloricValues[i]), purchaseDate, expirationDate, consumptionDate, Integer.parseInt(listNos[i]));
                 groceryItems.add(itemInformation);
             }
             return groceryItems;

@@ -59,10 +59,14 @@ public class GroceryItemRequests {
     }
     
     public void createReport(Long id, int listNo, String reportChoice) throws IOException, JSONException, ParseException{
-        List<ItemInformation> groceryList = new RequestAllUserItems().URLConnectionRequestGroceryList(id, listNo);
+        List<ItemInformation> groceryList = new RequestAllUserItems().URLConnectionRequestGroceryList(id);
         
         AbstractFactory abstractFactory;
         abstractFactory = ReportProvider.getFactory(reportChoice);
         abstractFactory.create(reportChoice, groceryList);
+    }
+    
+    public List<ItemInformation> retrieveAllUserItems(Long id) throws IOException, JSONException, ParseException{
+        return new RequestAllUserItems().URLConnectionRequestGroceryList(id);
     }
 }

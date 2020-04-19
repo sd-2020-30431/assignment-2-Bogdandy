@@ -1,4 +1,4 @@
-package server.business;
+package client.business;
 
 public class UserDataStructure{
     private Long idUser;
@@ -14,6 +14,14 @@ public class UserDataStructure{
         this.phoneNumber = phoneNumber;
         this.emailAddress = emailAddress;
         this.passCheck = passCheck;
+    }
+    
+    public UserDataStructure(String username, String password){
+        this.username = username;
+        this.password = password;
+        this.passCheck = password;
+        this.phoneNumber = null;
+        this.emailAddress = null;
     }
     
     public Long getIdUser(){
