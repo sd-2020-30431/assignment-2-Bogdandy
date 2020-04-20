@@ -5,6 +5,7 @@ import java.util.*;
 
 public class ObservedList extends Observable{
     private List<ItemInformation> groceryList;
+    private List<ItemInformation> groceryUpcomingList = new ArrayList<>();
     private Date date;
     
     public ObservedList(List<ItemInformation> groceryList){
@@ -24,13 +25,15 @@ public class ObservedList extends Observable{
             cal1.setTime(consumptionDate);
             cal2.setTime(date);
             if(cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR))
-            successful = false;
+                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)){
+                successful = false;
+                groceryUpcomingList.add(itemInformation);
+            }
         }
         
         if(successful == false){
             setChanged();
-            notifyObservers(); 
+            notifyObservers(groceryUpcomingList); 
         }
     }
 }

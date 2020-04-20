@@ -5,20 +5,34 @@ import javax.swing.JOptionPane;
 
 
 public class ListObserver implements Observer{
-
+    private List<ItemInformation> groceryList;
+    private boolean notifications = true;
+    
     @Override
     public void update(Observable o, Object arg) {
-        int input = JOptionPane.showConfirmDialog(null, "Did you finish eating ?");
-        
-        if(input == 0){
+        if(notifications){
+            groceryList = (List<ItemInformation>) arg;
+            String message = "Did you finish eating these items?\n";
             
-        }else if(input == 1){
-            int input2 = JOptionPane.showConfirmDialog(null, "Do you want to extend the consumption date?");
-        
-            if(input2 == 0){
-                System.out.println("YES");
+            for(ItemInformation itemInformation: groceryList){
+                message += ""+itemInformation.getItemName()+"\n";
+            }
+            
+            int input = JOptionPane.showConfirmDialog(null, message);
+
+            if(input == 0){
+                input = JOptionPane.showConfirmDialog(null, "Do you want to still be notified in this session?");
+
+                if(input == 1){
+                    notifications = false;
+                }
+            }else if(input == 1){
+                input = JOptionPane.showConfirmDialog(null, "We recommend that if you are still going to consume these items that you extend the duration.\nIf not please look for a local food bank and donate them.\nDo you want to still be notified in this session?");
+                
+                if(input == 1){
+                    notifications = false;
+                }
             }
         }
     }
-    
 }
