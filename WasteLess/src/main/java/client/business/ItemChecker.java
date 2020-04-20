@@ -1,4 +1,4 @@
-import client.business.ItemInformation;
+package client.business;
 
 public class ItemChecker {
     private ItemInformation data;

@@ -2,6 +2,7 @@ package client.presentation;
 
 import client.business.CheckList;
 import client.business.GroceryItemRequests;
+import client.business.ItemChecker;
 import client.business.ItemInformation;
 import java.io.*;
 import java.text.*;
@@ -17,6 +18,7 @@ public class GroceryListManagementForm extends javax.swing.JFrame {
     private int groceryListId = 1;
     private Long id;
     private Integer selectedRowIndex = null;
+    private ItemChecker itemChecker;
     private final GroceryItemRequests groceryItemRequests;
     private Timer observerTimer;
     
@@ -549,15 +551,18 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
                 purchaseDate, expirationDate, consumptionDate, groceryListId);
         selectedRowIndex = null;
         
-        try{
-            if(groceryItemRequests.addNewGroceryItem(itemInformation)){
-                setTableList();
-                JOptionPane.showMessageDialog(null, "Item Added Successfully!");
-            }else{
-                JOptionPane.showMessageDialog(null, "Item couldn't be added!\nCheck item fields!", "Warning", JOptionPane.WARNING_MESSAGE);
+        itemChecker = new ItemChecker(itemInformation);
+        if(itemChecker.checkItemInformation()){
+            try{
+                if(groceryItemRequests.addNewGroceryItem(itemInformation)){
+                    setTableList();
+                    JOptionPane.showMessageDialog(null, "Item Added Successfully!");
+                }
+            }catch(IOException ex){
+                JOptionPane.showMessageDialog(null, "Something went wrong!\nService provider may be down!", "Warning", JOptionPane.WARNING_MESSAGE);
             }
-        }catch(IOException ex){
-            JOptionPane.showMessageDialog(null, "Something went wrong!\nService provider may be down!", "Warning", JOptionPane.WARNING_MESSAGE);
+        }else{
+            JOptionPane.showMessageDialog(null, "Item couldn't be added!\nCheck item fields!", "Warning", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_addItemsToGroceryListActionPerformed
 
@@ -570,15 +575,19 @@ public void actionPerformed(java.awt.event.ActionEvent evt) {
             ItemInformation itemInformation = new ItemInformation(id,itemNameField.getText(), 
                     Integer.parseInt(quantityField.getText()),  Integer.parseInt(calorieValueField.getText()), 
                     purchaseDate, expirationDate, consumptionDate, groceryListId);
-            try{
-                if(groceryItemRequests.modifyGroceryItem(itemInformation, selectedRowIndex)){
-                    setTableList();
-                    JOptionPane.showMessageDialog(null, "Item modified successfully!");
-                }else{
-                    JOptionPane.showMessageDialog(null, "Item couldn't be modified!\nCheck item fields!", "Warning", JOptionPane.WARNING_MESSAGE);
+            
+            itemChecker = new ItemChecker(itemInformation);
+            if(itemChecker.checkItemInformation()){
+                try{
+                    if(groceryItemRequests.modifyGroceryItem(itemInformation, selectedRowIndex)){
+                        setTableList();
+                        JOptionPane.showMessageDialog(null, "Item modified successfully!");
+                    }
+                }catch(NumberFormatException| IOException ex){
+                    JOptionPane.showMessageDialog(null, "Something went wrong!\nService provider may be down!", "Warning", JOptionPane.WARNING_MESSAGE);
                 }
-            }catch(NumberFormatException| IOException ex){
-                JOptionPane.showMessageDialog(null, "Something went wrong!\nService provider may be down!", "Warning", JOptionPane.WARNING_MESSAGE);
+            }else{
+                JOptionPane.showMessageDialog(null, "Item couldn't be modified!\nCheck item fields!", "Warning", JOptionPane.WARNING_MESSAGE);
             }
         }
     }//GEN-LAST:event_modifyItemButtonActionPerformed
