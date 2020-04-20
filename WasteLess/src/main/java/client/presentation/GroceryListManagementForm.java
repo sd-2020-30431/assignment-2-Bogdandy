@@ -40,7 +40,7 @@ public class GroceryListManagementForm extends javax.swing.JFrame {
         this.id = id;
         setTableList();
         observerTimer = new Timer();
-        observerTimer.schedule(new CheckList(id, groceryItemRequests), 2000, 10000);
+        observerTimer.schedule(new CheckList(id, groceryItemRequests), 2000, 3600000 );
     }
     
     @SuppressWarnings("unchecked")
